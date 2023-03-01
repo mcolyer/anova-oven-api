@@ -2,17 +2,10 @@
 title: API Reference
 
 language_tabs: # must be one of https://github.com/rouge-ruby/rouge/wiki/List-of-supported-languages-and-lexers
-  - shell
-  - ruby
-  - python
-  - javascript
 
 toc_footers:
-  - <a href='#'>Sign Up for a Developer Key</a>
-  - <a href='https://github.com/slatedocs/slate'>Documentation Powered by Slate</a>
 
 includes:
-  - errors
 
 search: true
 
@@ -25,221 +18,419 @@ meta:
 
 # Introduction
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
-
-We have language bindings in Shell, Ruby, Python, and JavaScript! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
-
-This example API documentation page was created with [Slate](https://github.com/slatedocs/slate). Feel free to edit it and use it as a base for your own API's documentation.
+This is the private API used by the Anova Precision Oven mobile applications.
 
 # Authentication
 
-> To authorize, use this code:
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-```
-
 ```shell
-# With shell, you can just pass the correct header with each request
-curl "api_endpoint_here" \
-  -H "Authorization: meowmeowmeow"
+curl 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCGJwHXUhkNBdPkH3OAkjc9-3xMMjvanfU' \
+-H 'Content-Type: application/json' \
+--data-binary '{"email":"user@example.com","password":"PASSWORD","returnSecureToken":true}'
 ```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-```
-
-> Make sure to replace `meowmeowmeow` with your API key.
-
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
-
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
-
-`Authorization: meowmeowmeow`
-
-<aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
-</aside>
-
-# Kittens
-
-## Get All Kittens
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
-
-```shell
-curl "http://example.com/api/kittens" \
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
-```
-
-> The above command returns JSON structured like this:
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
-]
+{
+   "idToken": "",
+   "refreshToken": "",
+   "expiresIn": "",
+}
 ```
 
-This endpoint retrieves all kittens.
+> Be sure to store the `idToken` as you'll need it to authenticate to the
+> websocket. Also note that it's a JWT token, so you can extract additional
+> information about the token if you're interested.
 
-### HTTP Request
+Anova uses a Firebase application to authenticate its users with a password.
 
-`GET http://example.com/api/kittens`
+`POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword`
 
 ### Query Parameters
 
-Parameter | Default | Description
+Parameter | Required | Description
 --------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
+key | true | The Firebase application key
 
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
+### Body Parameters
 
-## Get a Specific Kitten
+Parameter | Required | Description
+--------- | ------- | -----------
+email | true | The email of the Anova mobile application user
+password | true | The password for the Anova mobile application user
+returnSecureToken | true | Informs the API to return a JWT token
 
-```ruby
-require 'kittn'
 
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
+# Websocket Commands
 
-```python
-import kittn
+You must connect to `wss://app.oven.anovaculinary.io`.
 
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2" \
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
-```
-
-> The above command returns JSON structured like this:
+## Authentication Command
 
 ```json
 {
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
+  "command": "AUTH_TOKEN",
+  "payload": "[ID_TOKEN]",
 }
 ```
 
-This endpoint retrieves a specific kitten.
+> The service will respond with the following message
 
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
-
-### HTTP Request
-
-`GET http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
-
-## Delete a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
+```json
+{"response":"AUTH_TOKEN_RESPONSE"}
 ```
 
-```python
-import kittn
+In order to authenticate, you must send a message containing the `idToken` you received in the
+earlier authorization call as the payload.
 
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2" \
-  -X DELETE \
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
-```
-
-> The above command returns JSON structured like this:
+## Send Command
 
 ```json
 {
-  "id": 2,
-  "deleted" : ":("
+  "command": "SEND_OVEN_COMMAND",
+  "payload": {
+    "deviceId": "<DEVICE_ID>",
+    "command": <COMMAND>,
+    "requestId": "<REQUEST_UUID>"
+  }
 }
 ```
 
-This endpoint deletes a specific kitten.
+> The service will acknowledge the message with the following response
 
-### HTTP Request
+```json
+{
+  "response": "OVEN_COMMAND_RESPONSE",
+  "requestId": "<REQUEST_UUID>",
+  "deviceId": "<DEVICE_ID>",
+  "success": true,
+  "data": [{},null,null]
+}
+```
 
-`DELETE http://example.com/kittens/<ID>`
-
-### URL Parameters
+### Parameters
 
 Parameter | Description
 --------- | -----------
-ID | The ID of the kitten to delete
+REQUEST_UUID | A UUID to differentiate this request from others.
+COMMAND | One of the Commands below
+DEVICE_ID | A unique identifer for the specific oven. In order to find the device ids that are available to you, you can wait for an <a href="#oven-state">Oven State message</a> to be received.
 
+# Send Command Payloads
+
+## Start Cook
+
+```json
+{
+	"id": "<COMMAND_UUID>",
+	"type": "startCook",
+	"payload": {
+		"cookId": "<DEVICE_ID>",
+		"stages": [
+			{
+				"stepType": "stage",
+				"id": "<STAGE_UUID>",
+				"title": "",
+				"description": "",
+				"type": "preheat",
+				"userActionRequired": false,
+				"temperatureBulbs": {
+					"wet": {
+						"setpoint": {
+							"fahrenheit": 131,
+							"celsius": 55
+						}
+					},
+					"mode": "wet"
+				},
+				"heatingElements": {
+					"top": {
+						"on": false
+					},
+					"bottom": {
+						"on": false
+					},
+					"rear": {
+						"on": true
+					}
+				},
+				"fan": {
+					"speed": 100
+				},
+				"vent": {
+					"open": false
+				},
+				"rackPosition": 3,
+				"steamGenerators": {
+					"relativeHumidity": {
+						"setpoint": 100
+					},
+					"mode": "relative-humidity"
+				}
+			}
+		]
+	}
+}
+```
+
+This must be sent within a <a href="#send-command">Send command</a>.
+
+Parameter | Description
+--------- | -----------
+COMMAND_UUID | A UUID to differentiate this command from others.
+DEVICE_ID | A unique identifer for the specific oven. In order to find the device ids that are available to you, you can wait for an <a href="#oven-state">Oven State message</a> to be received.
+STAGE_UUID | A unique identifer to differentiate this cooking stage from others.
+
+## Stop Cook
+
+```json
+{
+	"id": "<UUID>",
+	"type": "stopCook"
+}
+```
+
+This must be sent within a <a href="#send-command">Send command</a>.
+
+Parameter | Description
+--------- | -----------
+UUID | A UUID to differentiate this command from others.
+
+# Websocket Messages
+
+## Oven State
+
+The oven will broadcast periodically with it's state.
+
+```json
+{
+  "response": "OVEN_STATE",
+  "ovenId": "<DEVICE_ID>",
+  "data": {
+    "version": 1,
+    "updatedTimestamp": "2023-02-07T05:37:52Z",
+    "systemInfo": {
+      "online": true,
+      "hardwareVersion": "120V Universal",
+      "powerMains": 120,
+      "powerHertz": 60,
+      "firmwareVersion": "1.4.24",
+      "uiHardwareVersion": "UI_RENASAS",
+      "uiFirmwareVersion": "1.0.22",
+      "firmwareUpdatedTimestamp": "2022-12-29T20:21:49Z",
+      "lastConnectedTimestamp": "2023-02-07T02:55:23Z",
+      "lastDisconnectedTimestamp": "2023-02-07T02:55:17Z",
+      "triacsFailed": false
+    },
+    "state": {
+      "mode": "cook",
+      "temperatureUnit": "F",
+      "processedCommandIds": [
+        "d98bcdfd-0609-4cce-8123-a79f744505b2",
+        "71102b16-27f5-4962b186-02a6d8580aac",
+        "51b5bf15-1fb4-4352-9408-24f282c79e79",
+        "d124f649-0112-4d36-8a33-90589c1f7e80",
+        "937e8575-8cb8-4372-aa39-086f77c6a3d4",
+        "f407ea2c-c31a-4b1a-8847-3b92313add97",
+        "f563a89f-44f6-4caa-bced-68a625569e7a",
+        "7799d35a-bea4-4e5f-bb8b-78921a81dd73",
+        "d17bc3ab-162a-47d4afb9-789a92e6975f",
+        "3943226a-31cf-4e94-8374-9e6a868cf255"
+      ]
+    },
+    "nodes": {
+      "temperatureBulbs": {
+        "mode": "wet",
+        "wet": {
+          "current": {
+            "celsius": 25.45,
+            "fahrenheit": 77.81
+          },
+          "setpoint": {
+            "celsius": 55,
+            "fahrenheit": 131
+          },
+          "dosed": true,
+          "doseFailed": false
+        },
+        "dry": {
+          "current": {
+            "celsius": 25.45,
+            "fahrenheit": 77.81
+          }
+        },
+        "dryTop": {
+          "current": {
+            "celsius": 25.45,
+            "fahrenheit": 77.81
+          },
+          "overheated": false
+        },
+        "dryBottom": {
+          "current": {
+            "celsius": 24.98,
+            "fahrenheit": 76.96
+          },
+          "overheated": false
+        }
+      },
+      "timer": {
+        "mode": "idle",
+        "initial": 0,
+        "current": 0
+      },
+      "temperatureProbe": {
+        "connected": false
+      },
+      "steamGenerators": {
+        "mode": "relative-humidity",
+        "relativeHumidity": {
+          "current": 100,
+          "setpoint": 100
+        },
+        "evaporator": {
+          "failed": false,
+          "overheated": false,
+          "celsius": 38.72,
+          "watts": 0
+        },
+        "boiler": {
+          "descaleRequired": false,
+          "failed": false,
+          "overheated": false,
+          "celsius": 38.72,
+          "watts": 0,
+          "dosed": false
+        }
+      },
+      "heatingElements": {
+        "top": {
+          "on": false,
+          "failed": false,
+          "watts": 0
+        },
+        "bottom": {
+          "on": false,
+          "failed": false,
+          "watts": 0
+        },
+        "rear": {
+          "on": true,
+          "failed": false,
+          "watts": 0
+        }
+      },
+      "fan": {
+        "speed": 100,
+        "failed": false
+      },
+      "vent": {
+        "open": true
+      },
+      "waterTank": {
+        "empty": false
+      },
+      "door": {
+        "closed": true
+      },
+      "lamp": {
+        "on": true,
+        "failed": false,
+        "preference": "on"
+      },
+      "userInterfaceCircuit": {
+        "communicationFailed": false
+      }
+    },
+    "cook": {
+      "cookId": "<COMMAND_UUID>",
+      "stages": [
+        {
+          "title": 0,
+          "id": "<STAGE_UUID>",
+          "type": "preheat",
+          "userActionRequired": false,
+          "temperatureBulbs": {
+            "mode": "wet",
+            "wet": {
+              "setpoint": {
+                "celsius": 55,
+                "fahrenheit": 131
+              }
+            }
+          },
+          "steamGenerators": {
+            "mode": "relative-humidity",
+            "relativeHumidity": {
+              "setpoint": 100
+            }
+          },
+          "heatingElements": {
+            "top": {
+              "on": false
+            },
+            "bottom": {
+              "on": false
+            },
+            "rear": {
+              "on": true
+            }
+          },
+          "fan": {
+            "speed": 100
+          },
+          "vent": {
+            "open": false
+          }
+        },
+        {
+          "title": 0,
+          "id": "<STAGE_UUID>",
+          "type": "cook",
+          "userActionRequired": false,
+          "temperatureBulbs": {
+            "mode": "wet",
+            "wet": {
+              "setpoint": {
+                "celsius": 55,
+                "fahrenheit": 131
+              }
+            }
+          },
+          "steamGenerators": {
+            "mode": "relative-humidity",
+            "relativeHumidity": {
+              "setpoint": 100
+            }
+          },
+          "heatingElements": {
+            "top": {
+              "on": false
+            },
+            "bottom": {
+              "on": false
+            },
+            "rear": {
+              "on": true
+            }
+          },
+          "fan": {
+            "speed": 100
+          },
+          "vent": {
+            "open": false
+          }
+        }
+      ],
+      "activeStageId": "<STAGE_UUID>",
+      "activeStageIndex": 0,
+      "stageTransitionPendingUserAction": false,
+      "activeStageSeconecondsElapsed": 1
+    }
+  }
+}
+```
+
+Parameter | Description
+--------- | -----------
+DEVICE_ID | A unique identifer for the specific oven.
+COMMAND_UUID | A unique identifer to differentiate this command from others.
+STAGE_UUID | A unique identifer to differentiate this cooking stage from others.
