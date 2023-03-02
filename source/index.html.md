@@ -40,7 +40,7 @@ curl 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=
 > websocket. Also note that it's a JWT token, so you can extract additional
 > information about the token if you're interested.
 
-Anova uses a Firebase application to authenticate its users with a password.
+Anova uses a Firebase application to [authenticate] its users with a password.
 
 `POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword`
 
@@ -434,3 +434,5 @@ Parameter | Description
 DEVICE_ID | A unique identifer for the specific oven.
 COMMAND_UUID | A unique identifer to differentiate this command from others.
 STAGE_UUID | A unique identifer to differentiate this cooking stage from others.
+
+[authenticate]: https://firebase.google.com/docs/reference/rest/auth/#section-sign-in-email-password
